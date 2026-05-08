@@ -8,8 +8,6 @@ Tower of Hanoi game built with pygame, developed as an AI coding test in GitHub 
 ## AI Test Metadata
 - Tooling: GitHub Copilot (VS Code)
 - LLM: Claude Haiku 4.5
-- Prompt token usage: Not exposed by this VS Code Copilot environment
-- Completion token usage: Not exposed by this VS Code Copilot environment
 
 ## Project Summary
 - Traditional Tower of Hanoi gameplay with 3 towers and variable piece count

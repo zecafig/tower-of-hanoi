@@ -1,13 +1,13 @@
 # Tower of Hanoi
 
-![CI](https://github.com/REPO_OWNER/tower-of-hanoi/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/zecafig/tower-of-hanoi/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 Tower of Hanoi game built with pygame, developed as an AI coding test in GitHub Copilot.
 
 ## AI Test Metadata
 - Tooling: GitHub Copilot (VS Code)
-- LLM: GPT-5.3-Codex
+- LLM: Claude Haiku 4.5
 - Prompt token usage: Not exposed by this VS Code Copilot environment
 - Completion token usage: Not exposed by this VS Code Copilot environment
 
@@ -44,4 +44,3 @@ python -m pytest --cov=. --cov-report=term-missing --cov-fail-under=100
 ## Repository Notes
 - CI runs on every pull request
 - Coverage gate is enforced at 100%
-- Update the CI badge URL by replacing REPO_OWNER with your GitHub username/org after publishing

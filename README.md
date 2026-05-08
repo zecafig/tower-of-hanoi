@@ -28,7 +28,9 @@ Tower of Hanoi game built with pygame, developed as an AI coding test in GitHub 
 
 ## Local Run
 ```bash
+python3 -m venv .venv
 source .venv/bin/activate
+pip install -U requirements.txt
 python ui.py
 ```
 

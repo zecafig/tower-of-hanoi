@@ -234,3 +234,46 @@ class TestHanoiGameOptimalMoves:
         """Test optimal moves for ten pieces (2^10 - 1 = 1023)."""
         game = HanoiGame(10)
         assert game.get_optimal_moves() == 1023
+
+
+class TestHanoiGameSolve:
+    """Tests for optimal move sequence generator."""
+
+    def test_solve_one_piece(self):
+        """One piece requires a single move from tower 0 to tower 2."""
+        game = HanoiGame(1)
+        assert game.solve() == [(0, 2)]
+
+    def test_solve_two_pieces(self):
+        """Two pieces require exactly 3 moves."""
+        game = HanoiGame(2)
+        moves = game.solve()
+        assert len(moves) == 3
+        assert moves == [(0, 1), (0, 2), (1, 2)]
+
+    def test_solve_three_pieces(self):
+        """Three pieces require exactly 7 moves."""
+        game = HanoiGame(3)
+        moves = game.solve()
+        assert len(moves) == 7
+
+    def test_solve_length_matches_optimal(self):
+        """Solve always produces exactly 2^n - 1 moves."""
+        for n in range(1, 8):
+            game = HanoiGame(n)
+            assert len(game.solve()) == game.get_optimal_moves()
+
+    def test_solve_produces_valid_solution(self):
+        """Applying solved moves results in a won game."""
+        game = HanoiGame(4)
+        for source, destination in game.solve():
+            game.move_piece(source, destination)
+        assert game.game_over is True
+        assert game.towers[2] == [4, 3, 2, 1]
+
+    def test_solve_does_not_mutate_game(self):
+        """Calling solve() does not change current game state."""
+        game = HanoiGame(3)
+        original_state = game.get_state()
+        game.solve()
+        assert game.get_state() == original_state

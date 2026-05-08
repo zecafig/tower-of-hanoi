@@ -31,6 +31,9 @@ class HanoiUI:
         self.game = None
         self.selected_tower = None
         self.running = True
+        self.autoplay_moves: list[tuple[int, int]] = []
+        self.autoplay_timer: int = 0
+        self.autoplay_delay: int = 500
 
     def get_number_of_pieces(self) -> int:
         """Prompt user to enter number of pieces.
@@ -236,10 +239,19 @@ class HanoiUI:
         )
         self.screen.blit(optimal_text, (20, 60))
         
+        # Autoplay indicator
+        if self.autoplay_moves:
+            auto_text = self.font_small.render(
+                f"Autoplay: {len(self.autoplay_moves)} moves remaining",
+                True,
+                MD_SELECTED,
+            )
+            self.screen.blit(auto_text, (20, 90))
+
         # Instructions
         inst_y = self.height - 30
         instructions = self.font_tiny.render(
-            "Click tower to select source, click again to select destination | N: New Game | R: Reset | Q: Quit",
+            "Click tower to select | N: New Game | A: Autoplay | R: Reset | Q: Quit",
             True,
             MD_TEXT_SECONDARY,
         )
@@ -332,6 +344,16 @@ class HanoiUI:
                 if self.game.towers[tower_idx]:
                     self.selected_tower = tower_idx
 
+    def _tick_autoplay(self) -> None:
+        """Advance the autoplay sequence by one move when the delay has elapsed."""
+        if not self.autoplay_moves or self.game.game_over:
+            return
+        self.autoplay_timer += self.clock.get_time()
+        if self.autoplay_timer >= self.autoplay_delay:
+            source, destination = self.autoplay_moves.pop(0)
+            self.game.move_piece(source, destination)
+            self.autoplay_timer = 0
+
     def run(self) -> None:
         """Run the game loop."""
         num_pieces = self.get_number_of_pieces()
@@ -356,13 +378,20 @@ class HanoiUI:
                         else:
                             self.game = HanoiGame(new_piece_count)
                             self.selected_tower = None
+                    elif event.key == pygame.K_a:
+                        self.game.reset()
+                        self.selected_tower = None
+                        self.autoplay_moves = self.game.solve()
+                        self.autoplay_timer = 0
                     elif event.key == pygame.K_r:
                         self.game.reset()
                         self.selected_tower = None
+                        self.autoplay_moves = []
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if not self.game.game_over:
+                    if not self.game.game_over and not self.autoplay_moves:
                         self._handle_click(event.pos[0], event.pos[1])
             
+            self._tick_autoplay()
             self.screen.fill(MD_LIGHT_BG)
             self._draw_towers()
             self._draw_hud()

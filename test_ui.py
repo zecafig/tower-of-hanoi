@@ -193,6 +193,109 @@ def test_handle_click_paths() -> None:
     assert ui.selected_tower is None
 
 
+def test_init_autoplay_defaults() -> None:
+    """Autoplay state initialises empty with correct delay."""
+    ui = _build_ui()
+    assert ui.autoplay_moves == []
+    assert ui.autoplay_timer == 0
+    assert ui.autoplay_delay == 500
+
+
+def test_tick_autoplay_does_nothing_when_empty() -> None:
+    """_tick_autoplay is a no-op when there are no pending moves."""
+    ui = _build_ui()
+    ui.game = HanoiGame(3)
+    ui._tick_autoplay()
+    assert ui.game.move_count == 0
+
+
+def test_tick_autoplay_does_nothing_when_game_over() -> None:
+    """_tick_autoplay stops when the game is already won."""
+    ui = _build_ui()
+    ui.game = HanoiGame(1)
+    ui.game.move_piece(0, 2)
+    ui.autoplay_moves = [(0, 2)]
+    ui._tick_autoplay()
+    assert ui.game.move_count == 1  # No extra move applied
+
+
+def test_tick_autoplay_executes_move_after_delay() -> None:
+    """A move is executed once the delay threshold is exceeded."""
+    ui = _build_ui()
+    ui.game = HanoiGame(1)
+    ui.autoplay_moves = [(0, 2)]
+    ui.autoplay_timer = 500
+    ui.clock.get_time = MagicMock(return_value=0)
+    ui._tick_autoplay()
+    assert ui.game.move_count == 1
+    assert ui.autoplay_moves == []
+    assert ui.autoplay_timer == 0
+
+
+def test_tick_autoplay_does_not_move_before_delay() -> None:
+    """No move is made if the timer has not yet reached the delay."""
+    ui = _build_ui()
+    ui.game = HanoiGame(1)
+    ui.autoplay_moves = [(0, 2)]
+    ui.autoplay_timer = 0
+    ui.clock.get_time = MagicMock(return_value=100)
+    ui._tick_autoplay()
+    assert ui.game.move_count == 0
+
+
+def test_draw_hud_shows_autoplay_indicator() -> None:
+    """HUD renders an autoplay indicator when moves are queued."""
+    ui = _build_ui()
+    ui.game = HanoiGame(3)
+    ui.autoplay_moves = [(0, 2), (0, 1)]
+    ui._draw_hud()
+
+
+def test_run_a_key_starts_autoplay() -> None:
+    """Pressing A resets the game and queues the optimal move sequence."""
+    ui = _build_ui()
+    events = [
+        [MagicMock(type=pygame.KEYDOWN, key=pygame.K_a)],
+        [MagicMock(type=pygame.KEYDOWN, key=pygame.K_q)],
+    ]
+    with (
+        patch.object(ui, "get_number_of_pieces", return_value=2),
+        patch("pygame.event.get", side_effect=events),
+        patch.object(ui, "_tick_autoplay"),
+        patch.object(ui, "_draw_towers"),
+        patch.object(ui, "_draw_hud"),
+        patch.object(ui, "_draw_win_screen"),
+        patch("pygame.display.flip"),
+        patch("pygame.quit"),
+    ):
+        ui.run()
+    assert ui.game.num_pieces == 2
+    assert ui.selected_tower is None
+
+
+def test_run_click_blocked_during_autoplay() -> None:
+    """Mouse clicks are ignored while autoplay is in progress."""
+    ui = _build_ui()
+    events = [
+        [MagicMock(type=pygame.MOUSEBUTTONDOWN, pos=(250, 550))],
+        [MagicMock(type=pygame.KEYDOWN, key=pygame.K_q)],
+    ]
+    with (
+        patch.object(ui, "get_number_of_pieces", return_value=2),
+        patch("pygame.event.get", side_effect=events),
+        patch.object(ui, "_handle_click") as mock_click,
+        patch.object(ui, "_tick_autoplay"),
+        patch.object(ui, "_draw_towers"),
+        patch.object(ui, "_draw_hud"),
+        patch.object(ui, "_draw_win_screen"),
+        patch("pygame.display.flip"),
+        patch("pygame.quit"),
+    ):
+        ui.autoplay_moves = [(0, 2)]
+        ui.run()
+    mock_click.assert_not_called()
+
+
 def test_run_exits_when_piece_count_is_zero() -> None:
     """Run exits early when user cancels at input prompt."""
     ui = _build_ui()

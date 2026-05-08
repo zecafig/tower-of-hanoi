@@ -98,3 +98,22 @@ class HanoiGame:
             Optimal number of moves (2^n - 1).
         """
         return (2 ** self.num_pieces) - 1
+
+    def solve(self) -> list[tuple[int, int]]:
+        """Return the optimal sequence of moves to solve the puzzle.
+
+        Returns:
+            List of (source, destination) index pairs.
+        """
+        moves: list[tuple[int, int]] = []
+
+        def _hanoi(n: int, source: int, destination: int, auxiliary: int) -> None:
+            if n == 1:
+                moves.append((source, destination))
+                return
+            _hanoi(n - 1, source, auxiliary, destination)
+            moves.append((source, destination))
+            _hanoi(n - 1, auxiliary, destination, source)
+
+        _hanoi(self.num_pieces, 0, 2, 1)
+        return moves

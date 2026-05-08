@@ -8,3 +8,4 @@
 - Always use .venv.
 - Always use Material Design for UI.
 - "Clean the house" means checking for legacy or useless code.
+- Always let the user test and review before suggesting a commit.

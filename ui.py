@@ -77,7 +77,7 @@ class HanoiUI:
         
         # Instruction
         instruction = self.font_medium.render(
-            "Enter number of pieces (1-7):",
+            "Enter number of pieces:",
             True,
             MD_TEXT,
         )
